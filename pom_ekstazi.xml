@@ -19,12 +19,12 @@
   <parent>
     <groupId>org.apache.commons</groupId>
     <artifactId>commons-parent</artifactId>
-    <version>34</version>
+    <version>32</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.apache.commons</groupId>
   <artifactId>commons-math3</artifactId>
-  <version>3.4-SNAPSHOT</version>
+  <version>3.3-SNAPSHOT</version>
   <name>Apache Commons Math</name>
 
   <inceptionYear>2003</inceptionYear>
@@ -50,7 +50,7 @@
       <url>scm:svn:https://svn.apache.org/repos/infra/websites/production/commons/content/proper/commons-math/</url>
     </site>
   </distributionManagement>
-
+  
   <developers>
     <developer>
       <name>Mikkel Meyer Andersen</name>
@@ -127,11 +127,6 @@
       <id>tn</id>
       <email>tn at apache dot org</email>
     </developer>
-    <developer>
-      <name>Evan Ward</name>
-      <id>evanward</id>
-      <email>evanward at apache dot org</email>
-    </developer>
   </developers>
   <contributors>
     <contributor>
@@ -175,9 +170,6 @@
     </contributor>
     <contributor>
       <name>Dan Checkoway</name>
-    </contributor>
-    <contributor>
-      <name>Anders Conbere</name>
     </contributor>
     <contributor>
       <name>Charles Cooper</name>
@@ -261,9 +253,6 @@
       <name>J. Lewis Muir</name>
     </contributor>
     <contributor>
-      <name>Venkatesha Murthy</name>
-    </contributor>
-    <contributor>
       <name>Christopher Nix</name>
     </contributor>
     <contributor>
@@ -321,6 +310,9 @@
       <name>Kim van der Linde</name>
     </contributor>
     <contributor>
+      <name>Evan Ward</name>
+    </contributor>
+    <contributor>
       <name>Andrew Waterman</name>
     </contributor>
     <contributor>
@@ -338,6 +330,8 @@
   </contributors>
 
   <dependencies>
+<dependency> <groupId>org.ekstazi</groupId> <artifactId>ekstazi-maven-plugin</artifactId> <version>3.4.2</version> </dependency>
+<dependency> <groupId>org.ekstazi</groupId> <artifactId>ekstazi-maven-plugin</artifactId> <version>3.4.2</version> </dependency>
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
@@ -354,17 +348,17 @@
     <!-- This value must reflect the current name of the base package. -->
     <commons.osgi.symbolicName>org.apache.commons.math3</commons.osgi.symbolicName>
     <!-- do not use snapshot suffix here -->
-    <commons.release.version>3.4</commons.release.version>
+    <commons.release.version>3.2</commons.release.version>
     <commons.release.desc>(requires Java 1.5+)</commons.release.desc>
     <!-- <commons.rc.version>RC1</commons.rc.version> -->
     <commons.binary.suffix>-bin</commons.binary.suffix>
-
+ 
     <commons.release.2.version>2.2</commons.release.2.version>
     <!-- override parent name, because 2.2 uses different artifactId -->
     <commons.release.2.name>commons-math-${commons.release.2.version}</commons.release.2.name>
     <commons.release.2.desc>(requires Java 1.5+)</commons.release.2.desc>
     <commons.release.2.binary.suffix></commons.release.2.binary.suffix>
-
+ 
     <commons.jira.id>MATH</commons.jira.id>
     <commons.jira.pid>12310485</commons.jira.pid>
     <commons.encoding>UTF-8</commons.encoding>
@@ -374,28 +368,18 @@
     <math.findbugs.version>2.5.1</math.findbugs.version>
     <math.checkstyle.version>2.9.1</math.checkstyle.version>
     <math.clirr.version>2.6.1</math.clirr.version>
-
-    <!-- Temporary fix to support Java 8 -->
-    <commons.jacoco.version>0.7.0.201403182114</commons.jacoco.version>
+    <!-- Temporary downdate: 0.6.3 uses different tags and CP32 was not updated -->
+    <commons.jacoco.version>0.6.2.201302030002</commons.jacoco.version>
 
     <commons.site.path>math</commons.site.path>
     <commons.scmPubUrl>https://svn.apache.org/repos/infra/websites/production/commons/content/proper/commons-math</commons.scmPubUrl>
     <commons.scmPubCheckoutDirectory>site-content</commons.scmPubCheckoutDirectory>
-  </properties>
+  </properties> 
 
   <build>
+<plugin> <dependencies> <dependency> <groupId>org.ekstazi</groupId> <artifactId>org.ekstazi.core</artifactId> <version>3.4.2</version> </dependency> </dependencies> <groupId>org.ekstazi</groupId> <artifactId>ekstazi-maven-plugin</artifactId> <version>3.4.2</version> <executions> <execution> <id>selection</id> <goals> <goal>selection</goal> <goal>restore</goal> </goals> </execution> </executions> </plugin>
       <plugins>
-          <plugin>
-              <artifactId>maven-assembly-plugin</artifactId>
-              <configuration>
-                  <descriptors>
-                      <descriptor>src/main/assembly/src.xml</descriptor>
-                      <descriptor>src/main/assembly/bin.xml</descriptor>
-                  </descriptors>
-                  <!-- There are a lot of long file names. Suppress the warnings. -->
-                  <tarLongFileMode>gnu</tarLongFileMode>
-              </configuration>
-          </plugin>
+<plugin> <dependencies> <dependency> <groupId>org.ekstazi</groupId> <artifactId>org.ekstazi.core</artifactId> <version>3.4.2</version> </dependency> </dependencies> <groupId>org.ekstazi</groupId> <artifactId>ekstazi-maven-plugin</artifactId> <version>3.4.2</version> <executions> <execution> <id>selection</id> <goals> <goal>selection</goal> <goal>restore</goal> </goals> </execution> </executions> </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-surefire-plugin</artifactId>
@@ -406,8 +390,10 @@
                 <include>**/*TestPermutations.java</include>
               </includes>
               <excludes>
+<excludesFile>myExcludes</excludesFile>
                 <exclude>**/*AbstractTest.java</exclude>
               </excludes>
+<excludesFile>myExcludes</excludesFile>
           </configuration>
         </plugin>
         <plugin>
@@ -440,7 +426,7 @@
         <artifactId>maven-pmd-plugin</artifactId>
         <version>${math.pmd.version}</version>
         <configuration>
-          <targetJdk>${maven.compiler.target}</targetJdk>
+          <targetJdk>${maven.compiler.target}</targetJdk>  
         </configuration>
       </plugin>
       <plugin>
@@ -460,7 +446,7 @@
             <phase>package</phase>
             <configuration>
               <target>
-                <jar destfile="${project.build.directory}/${project.artifactId}-${project.version}-tools.jar">
+                <jar destfile="${project.build.directory}/${project.artifactId}-tools-${project.version}.jar">
                   <metainf dir="${basedir}" includes="NOTICE.txt,LICENSE.txt" />
                   <manifest>
                     <attribute name="Specification-Title" value="${project.name} Tools" />
@@ -483,7 +469,7 @@
           </execution>
         </executions>
       </plugin>
-      <!--  Attaches the commons-math3 tools JAR to the Maven lifecycle
+      <!--  Attaches the commons-math3-tools JAR to the Maven lifecycle
             to ensure they will be signed and deployed as normal -->
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
@@ -499,7 +485,7 @@
             <configuration>
               <artifacts>
                 <artifact>
-                  <file>${project.build.directory}/${project.artifactId}-${project.version}-tools.jar</file>
+                  <file>${project.build.directory}/${project.artifactId}-tools-${project.version}.jar</file>
                   <type>jar</type>
                   <classifier>tools</classifier>
                 </artifact>
@@ -578,10 +564,10 @@
             <!-- direction numbers for Sobol generation from Frances Y. Kuo and Stephen Joe,
                  available under a BSD-style license (see NOTICE.txt and LICENSE.txt) -->
             <exclude>src/main/resources/assets/org/apache/commons/math3/random/new-joe-kuo-6.1000</exclude>
-
+            
             <!-- text file explaining reference to a public domain image -->
             <exclude>src/userguide/resources/references.txt</exclude>
-
+            
             <!-- version 0.8 of apache-rat-plugin does not exclude properly
                  some default development tools files (see RAT-126) -->
             <exclude>bin/**</exclude>
@@ -632,7 +618,7 @@
         <artifactId>maven-pmd-plugin</artifactId>
         <version>${math.pmd.version}</version>
         <configuration>
-          <targetJdk>${maven.compiler.target}</targetJdk>
+          <targetJdk>${maven.compiler.target}</targetJdk>  
         </configuration>
         <reportSets>
           <reportSet>
@@ -684,11 +670,11 @@
                     <exec executable="svn">
                       <arg line="checkout --depth immediates ${commons.scmPubUrl} ${commons.scmPubCheckoutDirectory}" />
                     </exec>
-
+    
                     <exec executable="svn">
                       <arg line="update --set-depth exclude ${commons.scmPubCheckoutDirectory}/javadocs" />
                     </exec>
-
+  
                     <pathconvert pathsep=" " property="dirs">
                       <dirset dir="${commons.scmPubCheckoutDirectory}" includes="*" />
                     </pathconvert>

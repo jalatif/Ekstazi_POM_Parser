@@ -22,7 +22,7 @@ public class ListDir {
             else
                 if (file.getName().equalsIgnoreCase("pom.xml")){
                     pom_paths.add(file.getAbsolutePath());
-                    System.out.println(file.getAbsolutePath());
+                    //System.out.println(file.getAbsolutePath());
                 }
         }
     }

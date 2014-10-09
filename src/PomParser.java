@@ -5,6 +5,7 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.soap.Node;
 import javax.xml.xpath.*;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -30,29 +31,32 @@ public class PomParser {
 
         // compile the XPath expression
         //expr = xpath.compile("/build/plugins/plugin[artifactId='maven-surefire-plugin']/groupId/text()");//person[firstname='Lars']/lastname/text()");
-        expr = xpath.compile("/project/build/plugins/plugin[artifactId='maven-surefire-plugin']/groupId/text()");
+        expr = xpath.compile("/project/build//plugin[artifactId[contains(text(), 'maven-surefire-plugin')]]/artifactId/text()");
         // run the query and get a nodeset
         Object result = expr.evaluate(doc, XPathConstants.NODESET);
-
-        // cast the result to a DOM NodeList
         NodeList nodes = (NodeList) result;
-        //System.out.println(nodes.getLength());
-        for (int i=0; i < nodes.getLength();i++){
-            //System.out.println(nodes.item(i).getNodeValue());
-        }
-        return nodes.getLength() != 0;
+        System.out.print("Surefire : " + (nodes.getLength() != 0) + " ");
 
-//        // new XPath expression to get the number of people with name Lars
-//        expr = xpath.compile("count(//person[firstname='Lars'])");
-//        // run the query and get the number of nodes
-//        Double number = (Double) expr.evaluate(doc, XPathConstants.NUMBER);
-//        System.out.println("Number of objects " +number);
-//
-//        // do we have more than 2 people with name Lars?
-//        expr = xpath.compile("count(//person[firstname='Lars']) >2");
-//        // run the query and get the number of nodes
-//        Boolean check = (Boolean) expr.evaluate(doc, XPathConstants.BOOLEAN);
-//        System.out.println(check);
+        if (nodes.getLength() != 0) {
+            expr = xpath.compile("count(/project/build//plugin[artifactId[contains(text(), 'maven-surefire-plugin')]]/artifactId/parent::*/preceding-sibling::*) + 1");
+            result = expr.evaluate(doc, XPathConstants.NUMBER);
+            System.out.print("at plugin number : " + result + ", ");
+        }
+
+        //expr = xpath.compile("//dependencies/dependency[artifactId='junit']/artifactId/text()");
+        expr = xpath.compile("/project/dependencies|/project/dependencyManagement/dependencies");
+        result = expr.evaluate(doc, XPathConstants.NODESET);
+        System.out.print("Dependencies : " + (((NodeList) result).getLength() != 0) + ", ");
+
+        expr = xpath.compile("/project/build//plugin[artifactId[contains(text(), 'maven-surefire-plugin')]]/configuration/excludes");
+        result = expr.evaluate(doc, XPathConstants.NODESET);
+        System.out.print("Excludes : " + (((NodeList) result).getLength() != 0) + ", ");
+
+        expr = xpath.compile("/project/build//plugin[artifactId[contains(text(), 'maven-surefire-plugin')]]/configuration/argLine");
+        result = expr.evaluate(doc, XPathConstants.NODESET);
+        System.out.print("ArgLine : " + (((NodeList) result).getLength() != 0) + "");
+
+        return true;
     }
     public static void main(String args[]){
         String pom_file = "/home/manshu/Templates/EXEs/CS527SE/Homework/pom_parser/pom.xml";
@@ -65,8 +69,12 @@ public class PomParser {
         PomParser pp = new PomParser();
         ArrayList<String> poms = ld.ListDir(path);
         try{
-            for (String pom_path : poms)
-                System.out.println(pp.queryPom(pom_path));
+            for (String pom_path : poms){
+                System.out.print("File : " + pom_path + ", ");
+                pp.queryPom(pom_path);
+                System.out.println();
+            }
+            //pp.queryPom(pom_file);
         }catch (Exception e){
             e.printStackTrace();
         }
