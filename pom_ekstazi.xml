@@ -15,8 +15,9 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-  <parent>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <parent>
     <groupId>org.apache.commons</groupId>
     <artifactId>commons-parent</artifactId>
     <version>32</version>
@@ -377,10 +378,29 @@
   </properties> 
 
   <build>
-<plugin> <dependencies> <dependency> <groupId>org.ekstazi</groupId> <artifactId>org.ekstazi.core</artifactId> <version>3.4.2</version> </dependency> </dependencies> <groupId>org.ekstazi</groupId> <artifactId>ekstazi-maven-plugin</artifactId> <version>3.4.2</version> <executions> <execution> <id>selection</id> <goals> <goal>selection</goal> <goal>restore</goal> </goals> </execution> </executions> </plugin>
       <plugins>
-<plugin> <dependencies> <dependency> <groupId>org.ekstazi</groupId> <artifactId>org.ekstazi.core</artifactId> <version>3.4.2</version> </dependency> </dependencies> <groupId>org.ekstazi</groupId> <artifactId>ekstazi-maven-plugin</artifactId> <version>3.4.2</version> <executions> <execution> <id>selection</id> <goals> <goal>selection</goal> <goal>restore</goal> </goals> </execution> </executions> </plugin>
-        <plugin>
+          <plugin>
+              <dependencies>
+                  <dependency>
+                      <groupId>org.ekstazi</groupId>
+                      <artifactId>org.ekstazi.core</artifactId>
+                      <version>3.4.2</version>
+                  </dependency>
+              </dependencies>
+              <groupId>org.ekstazi</groupId>
+              <artifactId>ekstazi-maven-plugin</artifactId>
+              <version>3.4.2</version>
+              <executions>
+                  <execution>
+                      <id>selection</id>
+                      <goals>
+                          <goal>selection</goal>
+                          <goal>restore</goal>
+                      </goals>
+                  </execution>
+              </executions>
+          </plugin>
+          <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-surefire-plugin</artifactId>
             <configuration>
