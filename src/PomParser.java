@@ -4,10 +4,7 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.*;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.xpath.*;
@@ -25,8 +22,10 @@ public class PomParser {
         System.out.println("Current Path = " + current_path);
         String path = "/home/manshu/Templates/EXEs/CS527SE/Homework/hw7/commons-math/";
         String ek_version = "3.4.2";
-        if (args.length > 0) path = args[0];
-
+        if (args.length > 0)
+            path = args[0];
+        if (args.length > 1)
+            ek_version = args[1];
         ListDir ld = new ListDir();
         PomParser pp = new PomParser();
         ArrayList<String> poms = ld.ListDir(path);
@@ -36,7 +35,7 @@ public class PomParser {
                 pp.queryPom(pom_path, ek_version);
                 System.out.println();
             }
-            //pp.queryPom(pom_file);
+            //pp.queryPom(pom_file, ek_version);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -117,7 +116,7 @@ public class PomParser {
             exInsert.appendChild(goalsInsert);
             goalsInsert.appendChild(goalInsert);
             goalsInsert.appendChild(goalInsert2);
-            goalInsert.appendChild(doc.createTextNode("select"));
+            goalInsert.appendChild(doc.createTextNode("selection"));
             goalInsert2.appendChild(doc.createTextNode("restore"));
 
 
@@ -135,7 +134,7 @@ public class PomParser {
         NodeList ekstazi_dependency = (NodeList) xpath.evaluate("/project/dependencies/dependency[artifactId[contains(text(), 'ekstazi-maven-plugin')]]|/project/dependencyManagement/dependencies/dependency[artifactId[contains(text(), 'ekstazi-maven-plugin')]]", doc, XPathConstants.NODESET);
         System.out.print("Dependencies Present : " + (ekstazi_dependency.getLength() != 0) + ", ");
 
-        if (((NodeList) result).getLength() != 0) {
+        if (((NodeList) result).getLength() != 0 && ekstazi_dependency.getLength() == 0) {
             Node dependencies_node = (Node) xpath.evaluate("/project/dependencies|/project/dependencyManagement/dependencies", doc, XPathConstants.NODE);
             Element dInsert0 = doc.createElement("dependency");
             Element dInsert = doc.createElement("dependency");
@@ -156,17 +155,23 @@ public class PomParser {
             dependencies_node.insertBefore(dInsert0, dependencies_node.getFirstChild());
         }
 
-        expr = xpath.compile("/project/build//plugin[artifactId[contains(text(), 'maven-surefire-plugin')]]/configuration/excludes");
+        expr = xpath.compile("/project/build//plugin[artifactId[contains(text(), 'maven-surefire-plugin')]]/configuration");
         result = expr.evaluate(doc, XPathConstants.NODESET);
         System.out.print("Excludes : " + (((NodeList) result).getLength() != 0) + " ");
 
-        NodeList excludesFile = (NodeList) xpath.evaluate("/project/build//plugin[artifactId[contains(text(), 'maven-surefire-plugin')]]/configuration/excludes/excludesFile/text()", doc, XPathConstants.NODESET);
+        NodeList excludesFile = (NodeList) xpath.evaluate("/project/build//plugin[artifactId[contains(text(), 'maven-surefire-plugin')]]/configuration/excludesFile/text()", doc, XPathConstants.NODESET);
         System.out.print("ExcludesFile Present : " + (excludesFile.getLength() > 0 && excludesFile.item(0).getNodeValue().equalsIgnoreCase("myExcludes")) + ", ");
         if (((NodeList) result).getLength() != 0 && !(excludesFile.getLength() > 0 && excludesFile.item(0).getNodeValue().equalsIgnoreCase("myExcludes"))) {
-            Node excludes_node = (Node) xpath.evaluate("/project/build//plugin[artifactId[contains(text(), 'maven-surefire-plugin')]]/configuration/excludes", doc, XPathConstants.NODE);
+            Node conf_node = (Node) xpath.evaluate("/project/build//plugin[artifactId[contains(text(), 'maven-surefire-plugin')]]/configuration", doc, XPathConstants.NODE);
             Element excElement = doc.createElement("excludesFile");
             excElement.appendChild(doc.createTextNode("myExcludes"));
-            excludes_node.insertBefore(excElement, excludes_node.getFirstChild());
+            conf_node.appendChild(excElement);
+//            try{
+//                excludes_node.insertBefore(excElement, excludes_node.getNextSibling());
+//            }catch(DOMException e){
+//                //System.out.println("Error = " + e);
+//                excludes_node.getParentNode().appendChild(excElement);
+//            }
         }
 
         expr = xpath.compile("/project/build//plugin[artifactId[contains(text(), 'maven-surefire-plugin')]]/configuration/argLine");
@@ -180,6 +185,8 @@ public class PomParser {
         Transformer transformer = null;
         try {
             transformer = tFactory.newTransformer();
+            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+            transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
             DOMSource source = new DOMSource(doc);
             StreamResult _result = new StreamResult(xml_file);
             transformer.transform(source, _result);
