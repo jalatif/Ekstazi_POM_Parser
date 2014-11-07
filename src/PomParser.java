@@ -1,3 +1,4 @@
+
 import org.w3c.dom.*;
 import org.xml.sax.SAXException;
 
@@ -8,195 +9,285 @@ import javax.xml.transform.*;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.xpath.*;
+import java.io.*;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 
 /**
- * Created by manshu on 10/8/14.
+ * Created by manshu on 10/27/14.
  */
 public class PomParser {
 
+    private Document doc;
+    private String ekstazi_version;
+    private String xml_file;
+    private XPathExpression expr;
+    private XPathFactory xFactory;
+    private XPath xpath;
+
     public static void main(String args[]) {
-        String pom_file = "/home/manshu/Templates/EXEs/CS527SE/Homework/pom_parser/pom.xml";
-        String current_path = System.getProperty("user.dir");
-        System.out.println("Current Path = " + current_path);
-        String path = "/home/manshu/Templates/EXEs/CS527SE/Homework/hw7/commons-math/";
-        String ek_version = "3.4.2";
+
+        String path = "/home/manshu/Templates/EXEs/CS527SE/Homework/hw7/chukwa-ekstazi";
+        path = "/home/manshu/Templates/EXEs/CS527SE/Homework/hw7/temp_ekstazi/guava/guava-tests";
+
+        String ek_version = "4.1.0";
+
         if (args.length > 0)
             path = args[0];
         if (args.length > 1)
             ek_version = args[1];
+
         ListDir ld = new ListDir();
         PomParser pp = new PomParser();
         ArrayList<String> poms = ld.ListDir(path);
+
         try {
+
             for (String pom_path : poms) {
                 System.out.print("File : " + pom_path + ", ");
                 pp.queryPom(pom_path, ek_version);
                 System.out.println();
             }
-            //pp.queryPom(pom_file, ek_version);
+
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public boolean queryPom(String xml_file, String ekstazi_version) throws ParserConfigurationException, IOException, XPathException, SAXException {
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        //factory.setNamespaceAware(true);
-        DocumentBuilder builder = factory.newDocumentBuilder();
-        Document doc = builder.parse(xml_file);
+    private void insertExcludesFile(Node configuration_node)
+    {
+        Element excElement = doc.createElement("excludesFile");
+        excElement.appendChild(doc.createTextNode("myExcludes"));
+        configuration_node.appendChild(excElement);
+    }
 
-        XPathExpression expr = null;
+    private void addSureFireVersion(Node surefire_node){
+        Element versionNode = doc.createElement("version");
+        versionNode.appendChild(doc.createTextNode("2.13"));
+        surefire_node.appendChild(versionNode);
+    }
+    private void insertDependency(Node node){
 
+        Element dInsert0 = doc.createElement("dependency");
+        Element gInsert0 = doc.createElement("groupId");
+        Element aInsert0 = doc.createElement("artifactId");
+        Element vInsert0 = doc.createElement("version");
 
-        // create an XPathFactory
-        XPathFactory xFactory = XPathFactory.newInstance();
+        dInsert0.appendChild(gInsert0);
+        dInsert0.appendChild(aInsert0);
+        dInsert0.appendChild(vInsert0);
+        gInsert0.appendChild(doc.createTextNode("org.ekstazi"));
+        aInsert0.appendChild(doc.createTextNode("ekstazi-maven-plugin"));
+        vInsert0.appendChild(doc.createTextNode(ekstazi_version));
 
-        // create an XPath object
-        XPath xpath = xFactory.newXPath();
+        node.insertBefore(dInsert0, node.getFirstChild());
 
-        // compile the XPath expression
-        //expr = xpath.compile("/build/plugins/plugin[artifactId='maven-surefire-plugin']/groupId/text()");//person[firstname='Lars']/lastname/text()");
-        expr = xpath.compile("/project/build//plugin[artifactId[contains(text(), 'maven-surefire-plugin')]]/artifactId/text()");
-        // run the query and get a nodeset
-        Object result = expr.evaluate(doc, XPathConstants.NODESET);
-        NodeList nodes = (NodeList) result;
-        System.out.print("Surefire : " + (nodes.getLength() != 0) + " ");
+    }
 
-        NodeList ekstazi_plugin = (NodeList) xpath.evaluate("/project/build//plugin[artifactId[contains(text(), 'ekstazi-maven-plugin')]]/artifactId/text()", doc, XPathConstants.NODESET);
-        System.out.print(" EkPlugin Present : " + (nodes.getLength() != 0) + ", ");
+    private void insertPlugin(Node surefire_node)
+    {
+        Element toInsert = doc.createElement("plugin");
+        Element dsInsert = doc.createElement("dependencies");
+        Element dInsert = doc.createElement("dependency");
+        Element gInsert0 = doc.createElement("groupId");
+        Element gInsert = doc.createElement("groupId");
+        Element aInsert0 = doc.createElement("artifactId");
+        Element aInsert = doc.createElement("artifactId");
+        Element vInsert0 = doc.createElement("version");
+        Element vInsert = doc.createElement("version");
+        Element exsInsert = doc.createElement("executions");
+        Element exInsert = doc.createElement("execution");
+        Element idInsert = doc.createElement("id");
+        Element goalsInsert = doc.createElement("goals");
+        Element goalInsert = doc.createElement("goal");
+        Element goalInsert2 = doc.createElement("goal");
 
-        if (nodes.getLength() != 0 && ekstazi_plugin.getLength() == 0) {
-            expr = xpath.compile("count(/project/build//plugin[artifactId[contains(text(), 'maven-surefire-plugin')]]/artifactId/parent::*/preceding-sibling::*) + 1");
-            result = expr.evaluate(doc, XPathConstants.NUMBER);
-            System.out.print("at plugin number : " + result + ", ");
-
-            //expr = xpath.compile("/project/build//plugin[artifactId[contains(text(), 'maven-surefire-plugin')]]");
-            Node surefire_node = (Node) xpath.evaluate("/project/build//plugin[artifactId[contains(text(), 'maven-surefire-plugin')]]", doc, XPathConstants.NODE);
-            Element toInsert = doc.createElement("plugin");
-            Element dsInsert = doc.createElement("dependencies");
-            Element dInsert = doc.createElement("dependency");
-            Element gInsert0 = doc.createElement("groupId");
-            Element gInsert = doc.createElement("groupId");
-            Element aInsert0 = doc.createElement("artifactId");
-            Element aInsert = doc.createElement("artifactId");
-            Element vInsert0 = doc.createElement("version");
-            Element vInsert = doc.createElement("version");
-            Element exsInsert = doc.createElement("executions");
-            Element exInsert = doc.createElement("execution");
-            Element idInsert = doc.createElement("id");
-            Element goalsInsert = doc.createElement("goals");
-            Element goalInsert = doc.createElement("goal");
-            Element goalInsert2 = doc.createElement("goal");
-
-            Text txt1 = doc.createTextNode("org.ekstazi");
-            Text txt2 = doc.createTextNode("org.ekstazi.core");
-            Text txt3 = doc.createTextNode(ekstazi_version);
-            toInsert.appendChild(dsInsert);
-            dsInsert.appendChild(dInsert);
-            dInsert.appendChild(gInsert0);
-            dInsert.appendChild(aInsert0);
-            dInsert.appendChild(vInsert0);
-            gInsert0.appendChild(txt1);
-            aInsert0.appendChild(txt2);
-            vInsert0.appendChild(txt3);
-
-
-            toInsert.appendChild(gInsert);
-            toInsert.appendChild(aInsert);
-            toInsert.appendChild(vInsert);
-            gInsert.appendChild(doc.createTextNode("org.ekstazi"));
-            aInsert.appendChild(doc.createTextNode("ekstazi-maven-plugin"));
-            vInsert.appendChild(doc.createTextNode(ekstazi_version));
-            toInsert.appendChild(exsInsert);
-            exsInsert.appendChild(exInsert);
-            exInsert.appendChild(idInsert);
-            idInsert.appendChild(doc.createTextNode("selection"));
-            exInsert.appendChild(goalsInsert);
-            goalsInsert.appendChild(goalInsert);
-            goalsInsert.appendChild(goalInsert2);
-            goalInsert.appendChild(doc.createTextNode("selection"));
-            goalInsert2.appendChild(doc.createTextNode("restore"));
+        Text txt1 = doc.createTextNode("org.ekstazi");
+        Text txt2 = doc.createTextNode("org.ekstazi.core");
+        Text txt3 = doc.createTextNode(ekstazi_version);
+        toInsert.appendChild(dsInsert);
+        dsInsert.appendChild(dInsert);
+        dInsert.appendChild(gInsert0);
+        dInsert.appendChild(aInsert0);
+        dInsert.appendChild(vInsert0);
+        gInsert0.appendChild(txt1);
+        aInsert0.appendChild(txt2);
+        vInsert0.appendChild(txt3);
 
 
-            surefire_node.getParentNode().insertBefore(toInsert, surefire_node);
+        toInsert.appendChild(gInsert);
+        toInsert.appendChild(aInsert);
+        toInsert.appendChild(vInsert);
+        gInsert.appendChild(doc.createTextNode("org.ekstazi"));
+        aInsert.appendChild(doc.createTextNode("ekstazi-maven-plugin"));
+        vInsert.appendChild(doc.createTextNode(ekstazi_version));
+        toInsert.appendChild(exsInsert);
+        exsInsert.appendChild(exInsert);
+        exInsert.appendChild(idInsert);
+        idInsert.appendChild(doc.createTextNode("selection"));
+        exInsert.appendChild(goalsInsert);
+        goalsInsert.appendChild(goalInsert);
+        goalsInsert.appendChild(goalInsert2);
+        goalInsert.appendChild(doc.createTextNode("selection"));
+        goalInsert2.appendChild(doc.createTextNode("restore"));
 
+        surefire_node.getParentNode().insertBefore(toInsert, surefire_node);
+    }
 
+    private Node getNode(String search_expression) throws XPathException {
+        Node node = (Node) xpath.evaluate(search_expression, doc, XPathConstants.NODE);
+        return node;
+    }
 
-        }
+    private String getNodeValue(String search_expression) throws XPathException {
+        String node_val = (String) xpath.evaluate(search_expression, doc, XPathConstants.STRING);
+        return node_val;
+    }
 
-        //expr = xpath.compile("//dependencies/dependency[artifactId='junit']/artifactId/text()");
-        expr = xpath.compile("/project/dependencies|/project/dependencyManagement/dependencies");
-        result = expr.evaluate(doc, XPathConstants.NODESET);
-        System.out.print("Dependencies : " + (((NodeList) result).getLength() != 0) + " ");
+    private NodeList getNodeList(String search_expression) throws XPathException {
+        NodeList nodelist = (NodeList) xpath.evaluate(search_expression, doc, XPathConstants.NODESET);
+        return nodelist;
+    }
 
-        NodeList ekstazi_dependency = (NodeList) xpath.evaluate("/project/dependencies/dependency[artifactId[contains(text(), 'ekstazi-maven-plugin')]]|/project/dependencyManagement/dependencies/dependency[artifactId[contains(text(), 'ekstazi-maven-plugin')]]", doc, XPathConstants.NODESET);
-        System.out.print("Dependencies Present : " + (ekstazi_dependency.getLength() != 0) + ", ");
-
-        if (((NodeList) result).getLength() != 0 && ekstazi_dependency.getLength() == 0) {
-            Node dependencies_node = (Node) xpath.evaluate("/project/dependencies|/project/dependencyManagement/dependencies", doc, XPathConstants.NODE);
-            Element dInsert0 = doc.createElement("dependency");
-            Element dInsert = doc.createElement("dependency");
-            Element gInsert0 = doc.createElement("groupId");
-            Element gInsert = doc.createElement("groupId");
-            Element aInsert0 = doc.createElement("artifactId");
-            Element aInsert = doc.createElement("artifactId");
-            Element vInsert0 = doc.createElement("version");
-            Element vInsert = doc.createElement("version");
-
-            dInsert0.appendChild(gInsert0);
-            dInsert0.appendChild(aInsert0);
-            dInsert0.appendChild(vInsert0);
-            gInsert0.appendChild(doc.createTextNode("org.ekstazi"));
-            aInsert0.appendChild(doc.createTextNode("ekstazi-maven-plugin"));
-            vInsert0.appendChild(doc.createTextNode(ekstazi_version));
-
-            dependencies_node.insertBefore(dInsert0, dependencies_node.getFirstChild());
-        }
-
-        expr = xpath.compile("/project/build//plugin[artifactId[contains(text(), 'maven-surefire-plugin')]]/configuration");
-        result = expr.evaluate(doc, XPathConstants.NODESET);
-        System.out.print("Excludes : " + (((NodeList) result).getLength() != 0) + " ");
-
-        NodeList excludesFile = (NodeList) xpath.evaluate("/project/build//plugin[artifactId[contains(text(), 'maven-surefire-plugin')]]/configuration/excludesFile/text()", doc, XPathConstants.NODESET);
-        System.out.print("ExcludesFile Present : " + (excludesFile.getLength() > 0 && excludesFile.item(0).getNodeValue().equalsIgnoreCase("myExcludes")) + ", ");
-        if (((NodeList) result).getLength() != 0 && !(excludesFile.getLength() > 0 && excludesFile.item(0).getNodeValue().equalsIgnoreCase("myExcludes"))) {
-            Node conf_node = (Node) xpath.evaluate("/project/build//plugin[artifactId[contains(text(), 'maven-surefire-plugin')]]/configuration", doc, XPathConstants.NODE);
-            Element excElement = doc.createElement("excludesFile");
-            excElement.appendChild(doc.createTextNode("myExcludes"));
-            conf_node.appendChild(excElement);
-//            try{
-//                excludes_node.insertBefore(excElement, excludes_node.getNextSibling());
-//            }catch(DOMException e){
-//                //System.out.println("Error = " + e);
-//                excludes_node.getParentNode().appendChild(excElement);
-//            }
-        }
-
-        expr = xpath.compile("/project/build//plugin[artifactId[contains(text(), 'maven-surefire-plugin')]]/configuration/argLine");
-        result = expr.evaluate(doc, XPathConstants.NODESET);
-        System.out.print("ArgLine : " + (((NodeList) result).getLength() != 0) + "");
-
-        ////////////////////////////////////////////////////////
-        // Write out the final xml file
-        // Use a Transformer for output
+    private void writeXml(){
+        //////////////////////////////////////////////////////////////////
+        //Write out the final xml file again into the same pom.xml file//
+        /////////////////////////////////////////////////////////////////
         TransformerFactory tFactory = TransformerFactory.newInstance();
         Transformer transformer = null;
         try {
             transformer = tFactory.newTransformer();
             transformer.setOutputProperty(OutputKeys.INDENT, "yes");
             transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
+            //transformer.setOutputProperty(OutputKeys.ENCODING, "US-ASCII");
+            //transformer.setErrorListener(OutputKeys.);
+            // transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+            doc.setXmlStandalone(true);
             DOMSource source = new DOMSource(doc);
             StreamResult _result = new StreamResult(xml_file);
             transformer.transform(source, _result);
         } catch (TransformerConfigurationException e) {
             e.printStackTrace();
-            return false;
         } catch (TransformerException e) {
             e.printStackTrace();
-            return false;
         }
+
+    }
+
+
+    public boolean queryPom(String xml_file, String ekstazi_version) throws ParserConfigurationException, IOException, XPathException, SAXException {
+
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder builder = factory.newDocumentBuilder();
+        this.ekstazi_version = "3.4.2";
+        this.xml_file = xml_file;
+        this.expr = null;
+        this.xFactory = XPathFactory.newInstance();
+        this.doc = builder.parse(xml_file);
+        this.doc.getDocumentElement().normalize();
+        this.xpath = xFactory.newXPath();
+
+        NodeList nodes = getNodeList("/project/build//plugin[artifactId[contains(text(), 'maven-surefire-plugin')]]/artifactId/text()");
+        NodeList surefire_plugin = nodes;
+        System.out.print("Surefire : " + (nodes.getLength() != 0) + " ");
+
+        NodeList ekstazi_plugin = (NodeList) getNodeList("/project/build//plugin[artifactId[contains(text(), 'ekstazi-maven-plugin')]]/artifactId/text()");
+        System.out.print(" Ekstazi Plugin Present : " + (ekstazi_plugin.getLength() != 0) + ", ");
+
+        Node surefire_node = getNode("/project/build//plugin[artifactId[contains(text(), 'maven-surefire-plugin')]]");
+        if (surefire_node != null){
+            String surefire_version = getNodeValue("/project/build//plugin[artifactId[contains(text(), 'maven-surefire-plugin')]]/version");
+            if (!surefire_version.equals("")){
+                double version = Double.parseDouble(surefire_version);
+                if (version <= 2.10){
+                    System.out.println("\nVersion not supported = " + surefire_version);
+                    Node version_node = getNode("/project/build//plugin[artifactId[contains(text(), 'maven-surefire-plugin')]]/version");
+                    version_node.setTextContent("2.13");
+                    System.out.println("Surfire version upgraded to 2.13");
+                }else{
+                    System.out.println("\nVersion Supported = " + surefire_version);
+                }
+            }
+            else
+                addSureFireVersion(surefire_node);
+        }
+        NodeList argline_nodes = getNodeList("/project/build//plugin[artifactId[contains(text(), 'maven-surefire-plugin')]]//argLine");
+        Node argline_node = null;
+        for (int i = 0; i < argline_nodes.getLength(); i++) {
+            argline_node = argline_nodes.item(i);
+            if (argline_node != null) {
+                System.out.println("ArgLine present in this one");
+                String argText = argline_node.getTextContent();
+                if (!argText.contains("${argLine}")) {
+                    argline_node.setTextContent("${argLine} " + argText);
+                    System.out.println("Now argLine content = " + argline_node.getTextContent());
+                } else
+                    System.out.println("No change required");
+
+            } else {
+                System.out.println("ArgLine not present");
+            }
+        }
+        //Adding Ekstazi Plugin
+        if (nodes.getLength() != 0 && ekstazi_plugin.getLength() == 0) {
+            //expr = xpath.compile("count(/project/build//plugin[artifactId[contains(text(), 'maven-surefire-plugin')]]/artifactId/parent::*/preceding-sibling::*) + 1");
+            //result = expr.evaluate(doc, XPathConstants.NUMBER);
+            //System.out.print("at plugin number : " + result + ", ");
+
+            insertPlugin(surefire_node);
+        }
+
+        //Adding dependencies tag and ekstazi dependency
+        NodeList dependencies = getNodeList("/project/dependencies|/project/dependencyManagement/dependencies");
+        System.out.print("Dependencies : " + (dependencies.getLength() != 0) + " ");
+
+        NodeList ekstazi_dependency = getNodeList("/project/dependencies/dependency[artifactId[contains(text(), 'ekstazi-maven-plugin')]]|/project/dependencyManagement/dependencies/dependency[artifactId[contains(text(), 'ekstazi-maven-plugin')]]");
+        System.out.print("Ekstazi Dependency : " + (ekstazi_dependency.getLength() != 0) + " ");
+
+        if (dependencies.getLength() == 0){
+            Node project_node = getNode("/project");
+            Node project_artifact_node = getNode("/project/artifactId");
+            Element dependencies_node = doc.createElement("dependencies");
+            if (project_artifact_node.getNextSibling() != null){
+                project_node.insertBefore(dependencies_node, project_artifact_node.getNextSibling());
+                insertDependency(dependencies_node);
+            }
+        }
+
+        else if (ekstazi_dependency.getLength() == 0) {
+            Node dependencies_node = getNode("/project/dependencies|/project/dependencyManagement/dependencies");
+            insertDependency(dependencies_node);
+        }
+
+        //Adding Excludes Configuration
+        NodeList excludes_configuration = getNodeList("/project/build//plugin[artifactId[contains(text(), 'maven-surefire-plugin')]]/configuration");
+        System.out.print("Excludes : " + (excludes_configuration.getLength() != 0) + " ");
+
+        NodeList excludesFile = getNodeList("/project/build//plugin[artifactId[contains(text(), 'maven-surefire-plugin')]]/configuration/excludesFile/text()");
+        System.out.print("ExcludesFile Present : " + (excludesFile.getLength() > 0 && excludesFile.item(0).getNodeValue().equalsIgnoreCase("myExcludes")) + ", ");
+
+        if(surefire_plugin.getLength() != 0 && excludes_configuration.getLength() == 0)
+        {
+            surefire_node = getNode("/project/build//plugin[artifactId[contains(text(), 'maven-surefire-plugin')]]");
+            Node artifactId = getNode("/project/build//plugin[artifactId[contains(text(), 'maven-surefire-plugin')]]/artifactId");
+            Element configuration = doc.createElement("configuration");
+            surefire_node.insertBefore(configuration,artifactId.getNextSibling());
+            insertExcludesFile(configuration);
+        }
+        else if(excludesFile.getLength() == 0 && excludes_configuration.getLength() != 0)
+        {
+            Node configuration_node = getNode("/project/build//plugin[artifactId[contains(text(), 'maven-surefire-plugin')]]/configuration");
+            insertExcludesFile(configuration_node);
+        }
+
+        //Check ArgsLine
+        NodeList argsLine = getNodeList("/project/build//plugin[artifactId[contains(text(), 'maven-surefire-plugin')]]/configuration/argLine");
+        System.out.print("ArgLine : " + (argsLine.getLength() != 0) + "");
+
+        //Write to file
+        writeXml();
 
         return true;
     }
