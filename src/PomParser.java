@@ -1,4 +1,3 @@
-
 import org.w3c.dom.*;
 import org.xml.sax.SAXException;
 
@@ -9,9 +8,6 @@ import javax.xml.transform.*;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.xpath.*;
-import java.io.*;
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -30,7 +26,7 @@ public class PomParser {
     public static void main(String args[]) {
 
         String path = "/home/manshu/Templates/EXEs/CS527SE/Homework/hw7/chukwa-ekstazi";
-        path = "/home/manshu/Templates/EXEs/CS527SE/Homework/hw7/temp_ekstazi/guava/guava-tests";
+        path = "/home/manshu/Templates/EXEs/CS527SE/Homework/hw7/temp_ekstazi/common-maths";
 
         String ek_version = "4.1.0";
 
@@ -56,10 +52,12 @@ public class PomParser {
         }
     }
 
-    private void insertExcludesFile(Node configuration_node)
+    private void insertExcludesFile(Node configuration_node, String xml_file_path)
     {
+        String path = xml_file_path.substring(0, xml_file_path.lastIndexOf("/"));
+        //System.out.println("Path of myExcludes = " + path + "/myExcludes");
         Element excElement = doc.createElement("excludesFile");
-        excElement.appendChild(doc.createTextNode("myExcludes"));
+        excElement.appendChild(doc.createTextNode(path + "/myExcludes"));
         configuration_node.appendChild(excElement);
     }
 
@@ -274,12 +272,12 @@ public class PomParser {
             Node artifactId = getNode("/project/build//plugin[artifactId[contains(text(), 'maven-surefire-plugin')]]/artifactId");
             Element configuration = doc.createElement("configuration");
             surefire_node.insertBefore(configuration,artifactId.getNextSibling());
-            insertExcludesFile(configuration);
+            insertExcludesFile(configuration, xml_file);
         }
         else if(excludesFile.getLength() == 0 && excludes_configuration.getLength() != 0)
         {
             Node configuration_node = getNode("/project/build//plugin[artifactId[contains(text(), 'maven-surefire-plugin')]]/configuration");
-            insertExcludesFile(configuration_node);
+            insertExcludesFile(configuration_node, xml_file);
         }
 
         //Check ArgsLine

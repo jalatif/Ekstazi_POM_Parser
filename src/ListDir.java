@@ -1,6 +1,5 @@
 import java.io.File;
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by manshu on 10/8/14.
@@ -8,11 +7,25 @@ import java.util.List;
 public class ListDir {
     ArrayList<String> pom_paths;
 
+    public static void main(String args[]) {
+        String current_path = System.getProperty("user.dir");
+        System.out.println("Current Path = " + current_path);
+        String path = "/home/manshu/Templates/EXEs/CS527SE/Homework/hw7/temp_ekstazi/guava";
+        if (args.length > 0) path = args[0];
+
+        ListDir ld = new ListDir();
+        ld.ListDir(path);
+        for (String p : ld.pom_paths) {
+            System.out.println(p);
+        }
+    }
+
     public ArrayList<String> ListDir(String path){
         pom_paths = new ArrayList<String>(5);
         ListDirRecursively(path);
         return pom_paths;
     }
+
     private void ListDirRecursively(String path){
         File folder = new File(path);
         File[] dir_files = folder.listFiles();
@@ -41,18 +54,6 @@ public class ListDir {
                     }
                     pom_paths.add(file.getAbsolutePath());
                 }
-        }
-    }
-    public static void main(String args[]){
-        String current_path = System.getProperty("user.dir");
-        System.out.println("Current Path = " + current_path);
-        String path = "/home/manshu/Templates/EXEs/CS527SE/Homework/hw7/temp_ekstazi/continuum";
-        if (args.length > 0)   path = args[0];
-
-        ListDir ld = new ListDir();
-        ld.ListDir(path);
-        for (String p : ld.pom_paths){
-            System.out.println(p);
         }
     }
 }
