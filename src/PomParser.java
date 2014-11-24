@@ -297,7 +297,13 @@ public class PomParser {
                 }
                 catch(NumberFormatException ex)
                 {
-                    //Do Nothing
+                    if (surefire_force) {
+                        System.out.println("\nPrevious Version = " + surefire_version);
+                        Node version_node = getNode("/project/build//plugin[artifactId[contains(text(), 'maven-surefire-plugin')]]/version");
+                        version_node.setTextContent(surefire_new_version);
+                        System.out.println("Surefire version forcefully upgraded to " + surefire_new_version);
+                    }
+
                 }
             }
             else
