@@ -48,6 +48,9 @@ public class ListDir {
                             pom_paths.remove(pom_paths.size() - 1);
                         }
                         pom_found = 1;
+                        pom_paths.clear();
+                        pom_paths.add(file.getAbsolutePath());
+                        break;
                     }
                     else{
                         continue;
