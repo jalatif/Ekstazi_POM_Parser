@@ -9,11 +9,10 @@ import javax.xml.transform.*;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.xpath.*;
-import java.io.*;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import org.apache.commons.io.FileUtils;
 
 /**
  * Created by manshu on 10/27/14.
@@ -31,7 +30,7 @@ public class PomParser {
 
         String path = "/home/manshu/Templates/EXEs/CS527SE/Homework/hw7/temp_ekstazi/continuum";
         //path = "/home/manshu/Templates/EXEs/CS527SE/Homework/hw7/temp_ekstazi/cucumber/needle";
-        path = "/home/manshu/Templates/EXEs/CS527SE/Homework/hw7/temp_ekstazi/gsachs/gs-collections-code-generator";
+        path = "/home/manshu/Templates/EXEs/CS527SE/Homework/hw7/temp_ekstazi/cucumber";
 
         String ek_version = "4.2.0";
         String surefire_version = "2.13";
@@ -48,17 +47,25 @@ public class PomParser {
 
         ListDir ld = new ListDir();
         PomParser pp = new PomParser();
-        ArrayList<String> poms = ld.ListDir(path);
 
         try {
-
+            ArrayList<String> poms = ld.ListDir(path);
             for (String pom_path : poms) {
                 System.out.print("File : " + pom_path + ", ");
                 pp.queryPom(pom_path, ek_version, surefire_version, surefire_force, path);
                 System.out.println();
             }
 
-        } catch (Exception e) {
+        } catch (NullPointerException e) {
+            //e.printStackTrace();
+            System.out.println("Some configuration is not valid. Check path or other parameters");
+        } catch (SAXException e) {
+            e.printStackTrace();
+        } catch (ParserConfigurationException e) {
+            e.printStackTrace();
+        } catch (XPathException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
@@ -201,17 +208,32 @@ public class PomParser {
         try {
             transformer = tFactory.newTransformer();
             transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-            transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
+            transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
             //transformer.setOutputProperty(OutputKeys.ENCODING, "US-ASCII");
             //transformer.setErrorListener(OutputKeys.);
             // transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
             doc.setXmlStandalone(true);
+
+            FileUtils.copyFile(new File(xml_file), new File(xml_file+"_orig"));
+
             DOMSource source = new DOMSource(doc);
-            StreamResult _result = new StreamResult(xml_file);
+            String modified_xml_file = xml_file.substring(0, xml_file.lastIndexOf("/") + 1) + "ekstazi_" + xml_file.substring(xml_file.lastIndexOf("/") + 1);
+            StreamResult _result = new StreamResult(modified_xml_file);
             transformer.transform(source, _result);
+            boolean minimized = MinimizeDiff.MinimizeDiff(xml_file, modified_xml_file);
+            if (!minimized){
+                File foriginal = new File(xml_file);
+                File fmodified = new File(modified_xml_file);
+                FileUtils.moveFile(foriginal, fmodified);
+            }else{
+                File fmodified = new File(modified_xml_file);
+                //FileUtils.forceDelete(fmodified);
+            }
         } catch (TransformerConfigurationException e) {
             e.printStackTrace();
         } catch (TransformerException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
             e.printStackTrace();
         }
 
