@@ -35,13 +35,22 @@ public class PomParser {
         String ek_version = "4.2.0";
         String surefire_version = "2.13";
         boolean surefire_force = false;
+        int max_depth = -1;
 
         if (args.length > 0)
             path = args[0];
-        if (args.length > 1)
-            ek_version = args[1];
-        if (args.length > 2){
-            surefire_version = args[2];
+        if (args.length > 1){
+            try{
+                max_depth = Integer.parseInt(args[1]);
+            } catch (NumberFormatException nfe){
+                System.out.println("Wrong parameter");
+                System.exit(99);
+            }
+        }
+        if (args.length > 2)
+            ek_version = args[2];
+        if (args.length > 3){
+            surefire_version = args[3];
             surefire_force = true;
         }
 
@@ -49,7 +58,7 @@ public class PomParser {
         PomParser pp = new PomParser();
 
         try {
-            ArrayList<String> poms = ld.ListDir(path);
+            ArrayList<String> poms = ld.ListDir(path, max_depth);
             for (String pom_path : poms) {
                 System.out.print("File : " + pom_path + ", ");
                 pp.queryPom(pom_path, ek_version, surefire_version, surefire_force, path);
@@ -214,7 +223,7 @@ public class PomParser {
             // transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
             doc.setXmlStandalone(true);
 
-            FileUtils.copyFile(new File(xml_file), new File(xml_file+"_orig"));
+            //FileUtils.copyFile(new File(xml_file), new File(xml_file+"_orig"));
 
             DOMSource source = new DOMSource(doc);
             String modified_xml_file = xml_file.substring(0, xml_file.lastIndexOf("/") + 1) + "ekstazi_" + xml_file.substring(xml_file.lastIndexOf("/") + 1);
@@ -227,7 +236,7 @@ public class PomParser {
                 FileUtils.moveFile(foriginal, fmodified);
             }else{
                 File fmodified = new File(modified_xml_file);
-                //FileUtils.forceDelete(fmodified);
+                FileUtils.forceDelete(fmodified);
             }
         } catch (TransformerConfigurationException e) {
             e.printStackTrace();

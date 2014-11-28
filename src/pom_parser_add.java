@@ -36,7 +36,7 @@ public class pom_parser_add {
             ek_version = args[1];
         ListDir ld = new ListDir();
         pom_parser_add pp = new pom_parser_add();
-        ArrayList<String> poms = ld.ListDir(path);
+        ArrayList<String> poms = ld.ListDir(path, -1);
         try {
             for (String pom_path : poms) {
                 System.out.print("File : " + pom_path + ", ");
