@@ -334,7 +334,7 @@ public class PomParser {
 
             Node surefire_node = getNode(plugin_path + "/plugin[artifactId[contains(text(), 'maven-surefire-plugin')]]");
 
-            if (surefire_node == null) {
+            if (surefire_node == null && !plugin_path.equals("")) {
                 Node plugins = getNode(plugin_path);
                 //            if(plugins == null)
                 //                plugins = getNode("/project/build/pluginManagement/plugins");
@@ -347,9 +347,6 @@ public class PomParser {
 
                 surefire_node = getNode(plugin_path + "/plugin[artifactId[contains(text(), 'maven-surefire-plugin')]]");
             }
-
-            Node ver = getNode(plugin_path + "/plugin[artifactId[contains(text(), 'maven-surefire-plugin')]]/version");
-            System.out.println("Version_surefire = " + ver.getNodeName() + " " + surefire_node.getNodeName());
 
             if (surefire_node != null) {
                 String surefire_version = getNodeValue(plugin_path + "/plugin[artifactId[contains(text(), 'maven-surefire-plugin')]]/version");
