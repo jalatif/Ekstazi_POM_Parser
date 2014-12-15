@@ -11,6 +11,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class MinimizeDiff {
+    // converts each of the file content in List Structure
     public static List<String> fileToLines(String filename) throws IOException {
         List<String> lines = new LinkedList<String>();
         String line = "";
@@ -22,6 +23,7 @@ public class MinimizeDiff {
         return lines;
     }
 
+    // writes each of the file structure into the given file
     private static void linesToFile(List result, String filename) throws FileNotFoundException {
         //List<String>
         PrintWriter writer = new PrintWriter(filename);
@@ -36,6 +38,7 @@ public class MinimizeDiff {
         writer.close();
     }
 
+    // Given an original file and a modified files, find their diff and use only the required diff
     public static boolean MinimizeDiff(String original_file, String revised_file) throws IOException {
         List<String> original = fileToLines(original_file);
         List<String> revised  = fileToLines(revised_file);
@@ -43,6 +46,8 @@ public class MinimizeDiff {
         // Compute diff. Get the Patch object. Patch is the container for computed deltas.
         Patch patch = DiffUtils.diff(original, revised);
         Patch p2 = new Patch();
+
+        // for each delta component get its type and check whether this is an ekstazi related change
         for (Delta delta: patch.getDeltas()) {
             //System.out.println(delta.getType());
             //Delta delta = (Delta) delta_obj;
@@ -66,6 +71,8 @@ public class MinimizeDiff {
                 continue;
             }
         }
+
+        // Path the original file with only the necessary changes and write it into output.
         List result = null;
         try {
             result = DiffUtils.patch(original, p2);
@@ -90,7 +97,7 @@ public class MinimizeDiff {
 
     public static void main(String args[]){
         try{
-            MinimizeDiff("/home/manshu/Templates/EXEs/CS527SE/Homework/hw7/temp_ekstazi/cucumber/pom.xml", "/home/manshu/Templates/EXEs/CS527SE/Homework/hw7/temp_ekstazi/cucumber/ekstazi_pom.xml");
+            MinimizeDiff(args[0], args[1]);
         }catch (IOException ie){
             System.out.println("FIle not found");
         }
