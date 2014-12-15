@@ -335,21 +335,23 @@ public class PomParser {
             Node surefire_node = getNode(plugin_path + "/plugin[artifactId[contains(text(), 'maven-surefire-plugin')]]");
 
             if (surefire_node == null) {
-                Node plugins = getNode(plugin_path);
-                //            if(plugins == null)
-                //                plugins = getNode("/project/build/pluginManagement/plugins");
-                //
-                //            if(plugins == null)
-                //                plugins = getNode("/project/build/pluginManagement");
+                Node plugins = getNode("/project/build/plugins");
+				String plugin_new_path = "/project/build/plugins";
+                            if(plugins == null){
+                                plugins = getNode("/project/build/pluginManagement/plugins");
+                				plugin_new_path = "/project/build/pluginManagement/plugins";
+							}
+                            if(plugins == null){
+                                plugins = getNode("/project/build/pluginManagement");
+								plugin_new_path = "/project/build/pluginManagement";
+							}
 
                 if (plugins != null)
                     insertSurefire(plugins);
 
+				plugin_path = plugin_new_path;
                 surefire_node = getNode(plugin_path + "/plugin[artifactId[contains(text(), 'maven-surefire-plugin')]]");
             }
-
-            Node ver = getNode(plugin_path + "/plugin[artifactId[contains(text(), 'maven-surefire-plugin')]]/version");
-            System.out.println("Version_surefire = " + ver.getNodeName() + " " + surefire_node.getNodeName());
 
             if (surefire_node != null) {
                 String surefire_version = getNodeValue(plugin_path + "/plugin[artifactId[contains(text(), 'maven-surefire-plugin')]]/version");
