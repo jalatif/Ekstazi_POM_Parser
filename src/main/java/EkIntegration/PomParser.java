@@ -345,17 +345,22 @@ public class PomParser {
 //            }
             Node surefire_node = getNode(plugin_path + "/plugin[artifactId[contains(text(), 'maven-surefire-plugin')]]");
 
-            if (surefire_node == null && !plugin_path.equals("")) {
-                Node plugins = getNode(plugin_path);
-                //            if(plugins == null)
-                //                plugins = getNode("/project/build/pluginManagement/plugins");
-                //
-                //            if(plugins == null)
-                //                plugins = getNode("/project/build/pluginManagement");
+            if (surefire_node == null) {
+                Node plugins = getNode("/project/build/plugins");
+                String plugin_new_path = "/project/build/plugins";
+                if(plugins == null){
+                    plugins = getNode("/project/build/pluginManagement/plugins");
+                    plugin_new_path = "/project/build/pluginManagement/plugins";
+                }
+                if(plugins == null){
+                    plugins = getNode("/project/build/pluginManagement");
+                    plugin_new_path = "/project/build/pluginManagement";
+                }
 
                 if (plugins != null)
                     insertSurefire(plugins);
 
+                plugin_path = plugin_new_path;
                 surefire_node = getNode(plugin_path + "/plugin[artifactId[contains(text(), 'maven-surefire-plugin')]]");
             }
 
@@ -413,13 +418,13 @@ public class PomParser {
                     System.out.println("ArgLine not present");
                 }
             }
+
             //Adding Ekstazi Plugin
             nodes = getNodeList(plugin_path + "/plugin[artifactId[contains(text(), 'maven-surefire-plugin')]]/artifactId/text()");
             if (nodes.getLength() != 0 && ekstazi_plugin.getLength() == 0) {
                 //expr = xpath.compile("count(/project/build//plugin[artifactId[contains(text(), 'maven-surefire-plugin')]]/artifactId/parent::*/preceding-sibling::*) + 1");
                 //result = expr.evaluate(doc, XPathConstants.NUMBER);
                 //System.out.print("at plugin number : " + result + ", ");
-
                 insertPlugin(surefire_node);
             }
 
